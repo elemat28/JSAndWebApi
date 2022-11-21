@@ -10,8 +10,8 @@ let supportedUnits = [
 let hasVisitedBefore = false;
 let preferredUnits;
 let userLocation = null;
-
-
+let gumystara;
+let weatherData;
 
 
 class OpenWeatherApiClient {
@@ -24,45 +24,64 @@ class OpenWeatherApiClient {
         this.ApiKey = key;
     }
 
-    getForecastAtPos(latitude, longitude, units = preferredUnits, language = "en") {
+    linkGetForecastAtPos(latitude, longitude, units = preferredUnits, language = "en") {
         let url = `${this.base}${this.apiVersion}${this.weatherServices}lat=${latitude}&lon=${longitude}&appid=${this.ApiKey}&units=${units}&lang=${language}`;
         return url;
     }
-    getAirPollutionForecastAtPos(latitude, longitude){
+    linkGetAirPollutionForecastAtPos(latitude, longitude){
         let url = `${this.base}${this.apiVersion}${this.airPollutionServices}lat=${latitude}&lon=${longitude}&appid=${this.ApiKey}`;
         return url;
     }
+
+    fetchWeatherAtCoordinates(latitude, longitude){
+        let weatherData;
+        let link = this.linkGetForecastAtPos(latitude, longitude);
+        fetch(link, requestOptions)
+        .then(response => response.json())
+        .then(jsonData => {weatherData = jsonData;
+            updateWeatherVariable(jsonData);
+        }).then(jsonData => echoStatus())
+    }
+
 }
 
 let openWeatherCli = new OpenWeatherApiClient("60c88022e2d1d314a4779e6d84984619");
 
+function echoStatus(){
+    console.log(userLocation, weatherData);
+}
 
+function parseIPResolve(jsonResponse) {
+    let address = {
+        city: jsonResponse.city.name,
+        coordinates: [jsonResponse.location.latitude, jsonResponse.location.longitude],
+        isoCode: jsonResponse.country.iso_code,
+        capital: jsonResponse.country.capital
+    }
+    return address;
+}
 
-
-
-function ResolveUserIP(){
+function fetchIPData(){
+    let newAddress;
     fetch("https://api.geoapify.com/v1/ipinfo?&apiKey=2b0060bce4334aff8beb322d07440016", requestOptions)
-.then(response => response.json())
-.then(result => {
-    let cityName = result.city.name;
-    let iso = result.country.iso_code;
-    let coordinates = [result.location.latitude, result.location.longitude];
-    let capital = result.country.capital;
-    addressNode = {
-        city: cityName,
-        isoCode: iso,
-        coordinates: coordinates,
-        capital: capital
-    };
-   localStorage.setItem("userLocation", JSON.stringify(addressNode));
-   return addressNode;
-}).then(newResult)
-.catch(error => {
-    console.log('resolving the IP failed', error);
-    throw(error);
-});
+    .then(response => response.json())
+    .then(data => parseIPResolve(data))
+    .then(address => {
+        newAddress = address;
+        updateAddressVariable(address);
+    })
+    .catch(error => {
+        console.error(error);
+    });
+    return newAddress;
+}
 
+function updateAddressVariable(address){
+    userLocation = address;
+}
 
+function updateWeatherVariable(weatherJson){
+    weatherData = weatherJson;
 }
 
 function CheckIfValidUnitType(unit){
@@ -88,9 +107,7 @@ function InitializeTheEnvironment(){
     LoadAndValidateUnitsVariable();
 }
 
-function manualPrint(text){
-    console.log(t)
-}
+
 
 function fetchLocalWeather(){
     console.log("hi");
@@ -100,14 +117,16 @@ function askForAddress(mesg){
     console.log("hi");
 }
 
-function updateTheMap(locationData){
-    userLocation = locationData;
-    console.log(openWeatherCli.getForecastAtPos(locationData.coordinates[0],locationData.coordinates[1]));
+function updateWeatherData(locationData){
+    openWeatherCli.fetchWeatherAtCoordinates(userLocation.coordinates[0],userLocation.coordinates[1]);
+    //userLocation = locationData;
+    //console.log());
 
 }
 
 console.log("Hello API!");
 InitializeTheEnvironment();
+let myVal;
 let asyncFetchLocalWeather = new Promise(function(fetchData, promptForAddress) {
     let addressNode;
     try{
@@ -119,20 +138,21 @@ let asyncFetchLocalWeather = new Promise(function(fetchData, promptForAddress) {
     if(addressNode == null){
         console.log("No address currently in storage!");
         try{ 
-            ResolveUserIP();
+            fetchIPData();
+            
             addressNode = userLocation;
         }catch {
             promptForAddress("Error resolving user IP");
         }
     } else{
+        console.log("Loaded saved address!");
         userLocation = addressNode;
     }
     fetchData(addressNode);
 
 });
-
 asyncFetchLocalWeather.then(
-    function(value) {updateTheMap(value);},
-    function(error) {askForAddress(error);}
+function(value) {updateWeatherData(value);},
+function(error) {askForAddress(error);}
 );
-console.log(userLocation);
+(console.log(userLocation));
