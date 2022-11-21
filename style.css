@@ -1,29 +1,156 @@
 html {
     background: rgb(238,174,202);
     background: radial-gradient(circle, rgb(0, 10, 69) 0%, rgb(11, 50, 95) 100%);
-    min-width: min-content;
+    min-width: 100%;
+    min-height: 100%;
     font-family: 'Lato', sans-serif;
 }
 
 h1 {
-   
     text-align: center;
     margin: auto;
     color: aliceblue;
-    width: 50%;
+    
     font-size: 5rem;
 
 }
 
 body {
-    display: grid;
+
+    width: 90%;
+    height: 100%;
+    margin: auto;
 }
 
 main {
-    display: flex;
-    flex-direction: column;
 
-    max-width: min-content;
+
+    width: 85%;
     margin: auto;
     align-items: center;
+}
+
+#localWidget {
+    min-width: 10%;
+    max-width: 15%;
+    background-color: aquamarine;
+    min-height: 175px;
+    max-height: 50%;
+    position: fixed;
+    right: 2.5%;
+    top: 0%;
+    border-bottom: 2.5px solid black;
+}
+#localWidget h3 {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 5%;
+    margin-top:2.5%
+    
+
+}
+#localWidget h4 {
+    text-align: center;
+    font-weight: bold;
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+}
+
+#currentWeather {
+    height: 65%;
+    width: 100%;
+    display: block;
+    position: absolute;
+}
+#currentWeather h3 {
+    margin-top: 5%;
+    padding-top: 5%;
+    font-size: larger;
+    
+}
+#currentWeather h4 {
+    opacity: 0%;
+    margin-bottom: 12.5%;
+    margin-top: 0;
+}
+
+#miniClock {
+    position: absolute;
+    bottom: -5%;
+    width: 100%;
+    height: 25%;
+    margin: 0;
+}
+
+#miniClock h4{
+    position: absolute;
+    bottom: 0%;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    font-size: large;
+    font-size: 1.5rem;
+    border-top:5px solid black;
+    
+}
+@keyframes fadeIn {
+    0% {filter:blur(2rem);}
+    100% {filter:blur(0rem);}
+    
+}
+#weeklyForecast {
+    display: flex;
+    animation: fadeIn 1.5s;
+ 
+    background-color: rgb(87, 78, 53);
+    height: 35%;
+    margin: 0%;
+    justify-content: space-evenly;
+    margin: 2% 10%;
+    background: #849DCE;
+background: -moz-linear-gradient(-45deg, #849DCE 0%, #A4A4A4 50%, #8AB4C5 100%);
+background: -webkit-linear-gradient(-45deg, #849DCE 0%, #A4A4A4 50%, #8AB4C5 100%);
+background: linear-gradient(135deg, #849DCE 0%, #A4A4A4 50%, #8AB4C5 100%);
+}
+
+.dayOfTheWeek p {
+    opacity: 1;
+}
+.dayOfTheWeek {
+    
+    border: 5px solid rgba(28,110,164,0.07);
+    border-radius: 6px;
+    text-align: center;
+    color: aliceblue;
+    align-content: center;
+    min-height: 250px;
+    width: 100%;
+}
+
+.dayOfTheWeek h3  {
+    background: rgb(33,158,159);
+    background: linear-gradient(0deg, rgba(33,158,159,1) 0%, rgba(18,13,79,1) 100%);
+    margin: 0%;
+    padding-top: 3%;
+    padding-bottom: 2%;
+    font-size:x-large;
+}
+h3 p {
+    margin-bottom: 0;
+    font-size: medium;
+}
+
+.dailyForecast {
+    display: flex;
+}
+
+datapoint {
+    width: 1fr;
+    height: 100%;
+}
+
+datapoint h3 {
+    width: 100%;
+    height: 100%;
 }

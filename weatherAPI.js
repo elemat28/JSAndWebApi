@@ -12,19 +12,26 @@ let preferredUnits;
 let userLocation = null;
 let gumystara;
 let weatherData;
+let forecastData
 
 
 class OpenWeatherApiClient {
     base = "https:\/\/api.openweathermap.org\/data\/";
     apiVersion = "2.5/";
     weatherServices = "weather?";
+    weatherForecast = "forecast?";
     airPollutionServices = "air_pollution/forecast?";
 
     constructor(key){
         this.ApiKey = key;
     }
 
-    linkGetForecastAtPos(latitude, longitude, units = preferredUnits, language = "en") {
+    linkGetForecastAtPos(latitude, longitude, cnt = 40, units = preferredUnits, language = "en") {
+        let url = `${this.base}${this.apiVersion}${this.weatherForecast}lat=${latitude}&lon=${longitude}&cnt=${cnt}&appid=${this.ApiKey}&units=${units}&lang=${language}`;
+        return url;
+    }
+
+    linkGetWeatherAtPos(latitude, longitude, units = preferredUnits, language = "en") {
         let url = `${this.base}${this.apiVersion}${this.weatherServices}lat=${latitude}&lon=${longitude}&appid=${this.ApiKey}&units=${units}&lang=${language}`;
         return url;
     }
@@ -35,12 +42,32 @@ class OpenWeatherApiClient {
 
     fetchWeatherAtCoordinates(latitude, longitude){
         let weatherData;
-        let link = this.linkGetForecastAtPos(latitude, longitude);
+        let link = this.linkGetWeatherAtPos(latitude, longitude);
         fetch(link, requestOptions)
         .then(response => response.json())
-        .then(jsonData => {weatherData = jsonData;
-            updateWeatherVariable(jsonData);
-        }).then(jsonData => echoStatus())
+        .then(jsonData => {
+            weatherData = jsonData;
+        updateWeatherDataVariable(jsonData);
+    })
+        .catch(error => {
+            console.error(error);
+        });
+        return weatherData;
+    }
+
+    fetchForecastAtCoordinates(latitude, longitude){
+        let forecastData;
+        let link = this.linkGetForecastAtPos(latitude, longitude, 40);
+        fetch(link, requestOptions)
+        .then(response => response.json())
+        .then(jsonData => {
+            forecastData = jsonData;
+        updateForecastDataVariable(jsonData);
+    })
+        .catch(error => {
+            console.error(error);
+        });
+        return forecastData;
     }
 
 }
@@ -80,8 +107,15 @@ function updateAddressVariable(address){
     userLocation = address;
 }
 
-function updateWeatherVariable(weatherJson){
+function updateWeatherDataVariable(weatherJson){
     weatherData = weatherJson;
+    updateWidgetData();
+}
+
+function updateForecastDataVariable(forecastJson){
+    forecastData = forecastJson;
+    console.log(forecastData);
+    displayWeeklyForecast();
 }
 
 function CheckIfValidUnitType(unit){
@@ -117,11 +151,129 @@ function askForAddress(mesg){
     console.log("hi");
 }
 
-function updateWeatherData(locationData){
-    openWeatherCli.fetchWeatherAtCoordinates(userLocation.coordinates[0],userLocation.coordinates[1]);
-    //userLocation = locationData;
-    //console.log());
+function displayWeeklyForecast(){
+    let forecastLenght;
+    let forecastsPerDayArray = []
+    try{
+        forecastLenght = forecastData.list.length;
+    } catch {
+        return;
+    }
+    let weekly = document.getElementById("weeklyForecast");
+    let indexTracker = 0;
+    let now = new Date;
+    let dateString = now.toISOString().slice(0,10);
+    let dateToCompare = Date.parse(dateString);
+    console.log(forecastData);
+    let todayForcast = [forecastData.list[0]];
+    for (let index = 0; index < forecastData.list.length; index++) {
+        
+        if(Date.parse(forecastData.list[index].dt_txt.slice(0,10))>dateToCompare){
+            console.log(`break at index:${index}`);
+            break;
+        }
+        indexTracker++;
+        if(index>0){
+            todayForcast.push(forecastData.list[index]);
+        }
+    }
+    indexTracker--;
+    console.log(forecastData.list[indexTracker].dt_txt);
+   
+    let lastIndexHit = false;
+    if (indexTracker>0){
+        
+    }
+    forecastsPerDayArray = [todayForcast];
+    for (let index = 0; index < 5; index++) {
+        
+        if (lastIndexHit){
+            break;
+        }
+        forecastsPerDayArray.push([]);
+        let offset = indexTracker+1+8*index;
+        console.log("Day index: "+index);
+        for (let x = 0; x < 4; x++) {
+            if (lastIndexHit){
+                break;
+            }
+        let recordIndex = offset + x*2;
+        if (recordIndex >= 29){
+            recordIndex = 29;
+            lastIndexHit = true;
+        }
+        forecastsPerDayArray[forecastsPerDayArray.length-1].push(forecastData.list[recordIndex]);
+        console.log(forecastData.list[recordIndex].dt_txt);
+        }
+   
+        
+    }
+    for (let index = 0; index < forecastsPerDayArray.length; index++) {
+        insertDataIntoForecastSlot(index ,forecastsPerDayArray[index ]);
+        
+    }
 
+}
+
+function insertDataIntoForecastSlot(indexOfTheCard,data){
+    const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    //let htmlObj = document.querySelector(`#weeklyForecast :nth-child(${indexOfTheCard})`);
+    let htmlObj = document.querySelector(`#weeklyForecast`);
+        
+    console.log(data);
+        let dateString = data[1].dt_txt;
+        let cardDate = new Date(dateString);
+        htmlObj.children.item(indexOfTheCard).firstElementChild.textContent = weekday[cardDate.getDay()];
+        let p = document.createElement('p');
+        p.textContent = dateString.slice(0,10);
+        htmlObj.children.item(indexOfTheCard).firstElementChild.appendChild(p);
+        let datapoint = document.createElement('dataPoint');
+        let  header = document.createElement("h3");
+        let weather = document.createElement("h3");
+        let temperature = document.createElement("h3");
+        weather.textContent = data[1].weather[0].main;
+        temperature.textContent = data[1].main.temp;
+        let dateResolver = new Date;
+        //dateResolver.setUTCMilliseconds(data[1].dt);
+        header.textContent = data[1].dt_txt.slice(10,16);
+        datapoint.appendChild(weather);
+        datapoint.appendChild(header);
+        datapoint.appendChild(temperature);
+        let itemToReplace = htmlObj.children.item(indexOfTheCard).children.item(1);
+        console.log(
+        htmlObj.children.item(indexOfTheCard).children.item(1).replaceChild(datapoint,itemToReplace.firstChild))
+    }        
+function updateWeatherData(locationData){
+    let data = openWeatherCli.fetchWeatherAtCoordinates(userLocation.coordinates[0],userLocation.coordinates[1]);
+    updateWeatherDataVariable(data);
+    let forecast = openWeatherCli.fetchForecastAtCoordinates(userLocation.coordinates[0],userLocation.coordinates[1]);
+    updateForecastDataVariable(forecast);
+}
+
+function addLegendToTemperature(float, celcius = true){
+    return "float+℃";
+}
+
+function updateWidgetData(){
+    try{
+    let widgetDataItems = [weatherData.name,weatherData.weather[0].main, weatherData.weather[0].description, weatherData.main.temp_min, weatherData.main.temp, weatherData.main.temp_max]
+    console.log(weatherData);
+    let widgetElement = document.getElementById("localWidget");
+    widgetElement.firstElementChild.textContent=widgetDataItems[0];
+    let weatherElement = document.getElementById("currentWeather");
+    let listOfChildren = weatherElement.children;
+    for (let index = 1; index <= listOfChildren.length; index++) {
+        //console.log(listOfChildren[index].textContent);
+        let htmlObj = document.querySelector(`#currentWeather :nth-child(${index})`);
+        htmlObj.textContent = widgetDataItems[index];
+        htmlObj.style.opacity = "100%";
+    }
+    let clockElement = document.getElementById("miniClock");
+    } catch(e) {
+        return;
+    }
+    
+    //listOfChildren[0].textContent = weatherData.weather;
 }
 
 console.log("Hello API!");
@@ -155,4 +307,6 @@ asyncFetchLocalWeather.then(
 function(value) {updateWeatherData(value);},
 function(error) {askForAddress(error);}
 );
-(console.log(userLocation));
+
+
+//(console.log(userLocation));
