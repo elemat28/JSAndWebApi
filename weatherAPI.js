@@ -215,33 +215,45 @@ function displayWeeklyForecast(){
 
 }
 
+function parseJsonToDatapoint(jsonData){
+    let datapoint = document.createElement('datapoint');
+    let time = document.createElement("h3");
+    let weather = document.createElement("h3");
+    let temperature = document.createElement("h3");
+    console.log("json data provided:");
+    console.log (jsonData);
+    weather.textContent = jsonData.weather[0].main;
+    temperature.textContent = (addLegendToTemperature(jsonData.main.temp, preferredUnits));
+    time.textContent = jsonData.dt_txt.slice(10,16);
+    datapoint.appendChild(time);
+    datapoint.appendChild(weather);
+    datapoint.appendChild(temperature);
+    return datapoint;
+}
+
 function insertDataIntoForecastSlot(indexOfTheCard,data){
     const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
     //let htmlObj = document.querySelector(`#weeklyForecast :nth-child(${indexOfTheCard})`);
     let htmlObj = document.querySelector(`#weeklyForecast`);
         
     console.log(data);
-        let dateString = data[1].dt_txt;
+        let dateString = data[0].dt_txt;
         let cardDate = new Date(dateString);
         htmlObj.children.item(indexOfTheCard).firstElementChild.textContent = weekday[cardDate.getDay()];
         let p = document.createElement('p');
         p.textContent = dateString.slice(0,10);
         htmlObj.children.item(indexOfTheCard).firstElementChild.appendChild(p);
-        let datapoint = document.createElement('dataPoint');
-        let  header = document.createElement("h3");
-        let weather = document.createElement("h3");
-        let temperature = document.createElement("h3");
-        weather.textContent = data[1].weather[0].main;
-        temperature.textContent = data[1].main.temp;
-        let dateResolver = new Date;
-        //dateResolver.setUTCMilliseconds(data[1].dt);
-        header.textContent = data[1].dt_txt.slice(10,16);
-        datapoint.appendChild(weather);
-        datapoint.appendChild(header);
-        datapoint.appendChild(temperature);
-        let itemToReplace = htmlObj.children.item(indexOfTheCard).children.item(1);
-        console.log(
-        htmlObj.children.item(indexOfTheCard).children.item(1).replaceChild(datapoint,itemToReplace.firstChild))
+        let limit;
+        if(data.length>3){
+            console.log("need to trim");
+            limit = data.length-3;
+        } else{limit = 0};
+        for (let index = data.length-1; index >= limit; index--) {
+            let datapoint = parseJsonToDatapoint(data[index]);
+            htmlObj.children.item(indexOfTheCard).lastElementChild.appendChild(datapoint);           
+        }
+
+        
     }        
 function updateWeatherData(locationData){
     let data = openWeatherCli.fetchWeatherAtCoordinates(userLocation.coordinates[0],userLocation.coordinates[1]);
@@ -250,8 +262,13 @@ function updateWeatherData(locationData){
     updateForecastDataVariable(forecast);
 }
 
-function addLegendToTemperature(float, celcius = true){
-    return "float+℃";
+function addLegendToTemperature(temperature, format){
+    if((format == "standard") || (format == "imperial")){
+        return temperature+"℉";
+        
+    } else {
+        return temperature+"℃";
+    }
 }
 
 function updateWidgetData(){
