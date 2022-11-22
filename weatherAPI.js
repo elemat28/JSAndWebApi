@@ -12,7 +12,7 @@ let preferredUnits;
 let userLocation = null;
 let gumystara;
 let weatherData;
-let forecastData
+let dataToDisplay
 
 
 class OpenWeatherApiClient {
@@ -113,9 +113,9 @@ function updateWeatherDataVariable(weatherJson){
 }
 
 function updateForecastDataVariable(forecastJson){
-    forecastData = forecastJson;
-    console.log(forecastData);
-    displayWeeklyForecast();
+    dataToDisplay = forecastJson;
+    console.log(dataToDisplay);
+    displayWeeklyForecast("user_location", dataToDisplay);
 }
 
 function CheckIfValidUnitType(unit){
@@ -151,34 +151,37 @@ function askForAddress(mesg){
     console.log("hi");
 }
 
-function displayWeeklyForecast(){
+function displayWeeklyForecast(weeklyDivContainerID="user_location", dataToDisplay){
     let forecastLenght;
     let forecastsPerDayArray = []
     try{
-        forecastLenght = forecastData.list.length;
+        forecastLenght = dataToDisplay.list.length;
     } catch {
         return;
     }
-    let weekly = document.getElementById("weeklyForecast");
+    let container = document.getElementById(weeklyDivContainerID);
+    console.log("data to display:");
+    console.log(dataToDisplay);
+    container.children.item(0).textContent = dataToDisplay.city.name;
     let indexTracker = 0;
     let now = new Date;
     let dateString = now.toISOString().slice(0,10);
     let dateToCompare = Date.parse(dateString);
-    console.log(forecastData);
-    let todayForcast = [forecastData.list[0]];
-    for (let index = 0; index < forecastData.list.length; index++) {
+    console.log(dataToDisplay);
+    let todayForcast = [dataToDisplay.list[0]];
+    for (let index = 0; index < dataToDisplay.list.length; index++) {
         
-        if(Date.parse(forecastData.list[index].dt_txt.slice(0,10))>dateToCompare){
+        if(Date.parse(dataToDisplay.list[index].dt_txt.slice(0,10))>dateToCompare){
             console.log(`break at index:${index}`);
             break;
         }
         indexTracker++;
         if(index>0){
-            todayForcast.push(forecastData.list[index]);
+            todayForcast.push(dataToDisplay.list[index]);
         }
     }
     indexTracker--;
-    console.log(forecastData.list[indexTracker].dt_txt);
+    console.log(dataToDisplay.list[indexTracker].dt_txt);
    
     let lastIndexHit = false;
     if (indexTracker>0){
@@ -192,7 +195,6 @@ function displayWeeklyForecast(){
         }
         forecastsPerDayArray.push([]);
         let offset = indexTracker+1+8*index;
-        console.log("Day index: "+index);
         for (let x = 0; x < 4; x++) {
             if (lastIndexHit){
                 break;
@@ -202,14 +204,14 @@ function displayWeeklyForecast(){
             recordIndex = 29;
             lastIndexHit = true;
         }
-        forecastsPerDayArray[forecastsPerDayArray.length-1].push(forecastData.list[recordIndex]);
-        console.log(forecastData.list[recordIndex].dt_txt);
+        forecastsPerDayArray[forecastsPerDayArray.length-1].push(dataToDisplay.list[recordIndex]);
         }
    
         
     }
+    let tableForForecasts = container.children.item(1);
     for (let index = 0; index < forecastsPerDayArray.length; index++) {
-        insertDataIntoForecastSlot(index ,forecastsPerDayArray[index ]);
+        insertDataIntoForecastSlot(tableForForecasts,index,forecastsPerDayArray[index]);
         
     }
 
@@ -231,18 +233,19 @@ function parseJsonToDatapoint(jsonData){
     return datapoint;
 }
 
-function insertDataIntoForecastSlot(indexOfTheCard,data){
+function insertDataIntoForecastSlot(container, indexOfTheCard,data){
     const weekday = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
     //let htmlObj = document.querySelector(`#weeklyForecast :nth-child(${indexOfTheCard})`);
-    let htmlObj = document.querySelector(`#weeklyForecast`);
-        
-    console.log(data);
+
+    console.log("container");
+    console.log(container);
+    console.log(container.children);
         let dateString = data[0].dt_txt;
         let cardDate = new Date(dateString);
-        htmlObj.children.item(indexOfTheCard).firstElementChild.textContent = weekday[cardDate.getDay()];
+        container.children.item(indexOfTheCard).firstElementChild.firstElementChild.textContent = weekday[cardDate.getDay()];
         let p = document.createElement('p');
         p.textContent = dateString.slice(0,10);
-        htmlObj.children.item(indexOfTheCard).firstElementChild.appendChild(p);
+        container.children.item(indexOfTheCard).firstElementChild.appendChild(p);
         let limit;
         if(data.length>3){
             console.log("need to trim");
@@ -250,7 +253,7 @@ function insertDataIntoForecastSlot(indexOfTheCard,data){
         } else{limit = 0};
         for (let index = data.length-1; index >= limit; index--) {
             let datapoint = parseJsonToDatapoint(data[index]);
-            htmlObj.children.item(indexOfTheCard).lastElementChild.appendChild(datapoint);           
+            container.children.item(indexOfTheCard).lastElementChild.insertAdjacentElement("afterbegin", datapoint);           
         }
 
         
