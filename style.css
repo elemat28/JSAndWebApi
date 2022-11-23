@@ -52,16 +52,48 @@ main {
 #localWidget h4 {
     text-align: center;
     font-weight: bold;
-    position: absolute;
+    
     bottom: 0px;
     width: 100%;
+}
+#localWidget #unitPreference {
+    text-align: center;
+    font-weight: bold;
+    position: absolute;
+    bottom:-50px;
+    width: 100%;
+    
+    
+}
+
+#unitPreference h5 {
+    display: inline;
+    width: 50%;
+    font-size: xx-large;
+    margin: 0 3%;
+    border-radius: 20%;
+    
+}
+#unitPreference h5:hover {
+    cursor: pointer;
+}
+.highlightActiveUnitSetting {
+    color: white;
+    background-color: #849DCE;
+}
+
+.notActiveOption {
+
+    color: black;
+    background-color: rgb(27, 49, 67);
+    
 }
 
 #currentWeather {
     height: 65%;
     width: 100%;
     display: block;
-    position: absolute;
+    
 }
 #currentWeather h3 {
     margin-top: 5%;
@@ -76,7 +108,7 @@ main {
 }
 
 #miniClock {
-    position: absolute;
+    position:relative;
     bottom: -5%;
     width: 100%;
     height: 25%;
@@ -84,7 +116,7 @@ main {
 }
 
 #miniClock h4{
-    position: absolute;
+    position: relative;
     bottom: 0%;
     width: 100%;
     height: 100%;
@@ -99,16 +131,23 @@ main {
     100% {filter:blur(0rem);}
     
 }
-#weeklyForecast {
+.fadeInClass {
+    animation: fadeIn 0.5s;
+    
+    
+}
+ .weeklyForecast {
     border-top: 2px solid rgb(58, 58, 58);
     border-bottom: 2px solid rgb(58, 58, 58);
     display: flex;
-    animation: fadeIn 1.5s;
-
+    flex-direction: row;
+    flex-wrap: wrap;
+ 
+    margin:auto;
     background-color: rgb(87, 78, 53);
+    align-items: stretch;
 
-    justify-content: space-evenly;
-    margin: 2% 10%;
+    justify-content: center;
     padding: 0;
     background: #849DCE;
 background: -moz-linear-gradient(-45deg, #849DCE 0%, #A4A4A4 50%, #8AB4C5 100%);
@@ -118,71 +157,118 @@ background: linear-gradient(135deg, #849DCE 0%, #A4A4A4 50%, #8AB4C5 100%);
 
 .dayOfTheWeek p {
     opacity: 1;
+    margin: 0;
 }
 .dayOfTheWeek {
-    
+    display: flex;
+    flex-direction: column;
     border-left: 2px solid #444444;
     border-right: 2px solid #444444;
     border-radius: 0% 0% 2% 2%;
     text-align: center;
     color: aliceblue;
-    align-content: center;
-    min-height: 250px;
-    width: 100%;
+    align-items: center;
+
+    
+
     
     
     
     
 }
+
 
 .dayOfTheWeek h3  {
-    margin: 0%;
-    padding-top: 3%;
-    padding-bottom: 2%;
+    text-align: center;
     font-size:x-large;
-    height: 25%;
+    width: 100%;
+
 }
 .dayOfTheWeek header  {
-    background: rgb(33,158,159);
-    
+
     background: linear-gradient(0deg, rgba(33,158,159,1) 0%, rgba(18,13,79,1) 100%);
-    margin: 0%;
-    padding-top: 3%;
-    padding-bottom: 2%;
     border-bottom: 2px solid #444444;
-    height: 25%;
-}
-h3 p {
-    margin-bottom: 0;
-    font-size: medium;
+    width: 100%;
+
 }
 
+forecast_container {
+    width: 100%;
+}
+
+
 .dailyForecast {
-    height: 70%;
-    display: flex;
+
+
     border-radius: 0 0 2% 2%;
+    padding: 0 0.2%;
+
+    width: 100%;
+    
     
 }
 
 datapoint {
-    flex-grow: 1;
+    display: inline-flex;
+    flex-direction: column  ;
     border-radius:  0 0 2% 2%;
-    padding: 0 1% 2% 1%;
+
+
 
   
-  border: 1px solid #444444;
+border: 1px solid #444444;
 }
 
-datapoint h3 {
-    width: 100%;
-    height: 100%;
-    
-}
+
+
 
 #forecastsContainer {
     text-align: center;
     color: aliceblue;
+    
 }
 #forecastsContainer h2 {
     margin-bottom: 2%;
 }
+
+.autocomplete-items {
+    position: relative;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0px 2px 10px 2px rgba(0, 0, 0, 0.1);
+    border-top: none;
+    background-color: #fff;
+    color: black;
+  
+    z-index: 99;
+    top: calc(100% + 2px);
+    left: 0;
+    right: 0;
+  }
+  
+  .autocomplete-items div {
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .autocomplete-items div:hover {
+    /*when hovering an item:*/
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+
+
+  findAddress {
+    color: azure;
+  }
+  #addressLookupDiv {
+    width: 25%;
+    margin:auto;
+    align-items: center;
+    align-content: center;
+    text-align: center;
+  }
+
+  #search_result button{
+    color: #444444;
+    width: 15%;
+    height: 2rem;
+  }
